@@ -16,24 +16,23 @@ const StyledButton = styled.button`
 `;
 
 function SidePanel() {
-  function submit(formData: any) {
-    console.log(formData);
-  }
+
+  const handleSubmit = (event: any) => {
+    event.preventDefault();
+    const todo = event.target.elements.todo.value;
+    console.log(todo);
+    //add todo in the todo list
+    event.target.elements.todo.value = ''
+  };
 
   return (
     <StyledSidePanel>
       <h1>SidePanel</h1>
-      <StyledForm action={submit}>
-        <StyledInput placeholder="anything,,," type="text" name="todo" />
-        <label htmlFor="priority">Choose a priority: </label>
-        <select id="priority" name="priority">
-          <option value="do">do</option>
-          <option value="decide">decide</option>
-          <option value="delete">delete</option>
-          <option value="delegate">delegate</option>
-        </select>
+      <StyledForm onSubmit={handleSubmit}>
+        <StyledInput placeholder="anything,,," type="text" name="todo" required/>
         <StyledButton>Submit</StyledButton>
       </StyledForm>
+      {/* todo list has the todos from db */}
     </StyledSidePanel>
   );
 }
