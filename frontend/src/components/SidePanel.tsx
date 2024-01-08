@@ -1,6 +1,16 @@
 import styled from "styled-components";
-import { Temporal } from "@js-temporal/polyfill";
-import { useState, useEffect } from "react";
+
+interface SidePanelProps {
+  handleSubmit: any;
+  data: any;
+  className: string;
+  handleDragStart: any;
+  handleDragEnter: any;
+  handleDragOver: any;
+  handleDragLeave: any;
+  handleDrop: any;
+  setDraggedItem: any;
+}
 
 const StyledSidePanel = styled.div`
   border: 1px solid blue;
@@ -20,60 +30,26 @@ const StyledTodo = styled.p`
   border: 1px solid blue;
 `
 
-interface Todo {
-  id: number;
-  text: string;
-  date: string;
-  // Add other properties as needed
-}
-
-function SidePanel() {
-  const [data, setData] = useState<Todo[]>([]);
-
-  const handleSubmit = (event: any) => {
-    event.preventDefault();
-    const todo = { text: event.target.elements.todo.value, date: Temporal.Now.plainDateTimeISO() };
-    fetch('http://localhost:8080/todo', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(todo),
-    })
-      .then((result) => {
-        console.log('Result:', result);
-        event.target.elements.todo.value = '';
-        fetchTodos();
-      })
-  };
-
-  const fetchTodos = () => {
-    fetch('http://localhost:8080/todo', {
-      method: 'GET'
-    })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
-      })
-      .then(data => {
-        setData(data.todos);
-        console.log('Data received:', data); // Log the data received from the server
-      })
-      .catch(error => {
-        console.error('There was a problem with the GET request:', error);
-      });
-  };
-
-
-  useEffect(() => {
-    fetchTodos();
-  }, []);
-
+function SidePanel({
+  handleSubmit,
+  data,
+  className,
+  handleDragStart,
+  handleDragEnter,
+  handleDragOver,
+  handleDragLeave,
+  handleDrop,
+  setDraggedItem,
+}: SidePanelProps) {
 
   return (
-    <StyledSidePanel>
+    <StyledSidePanel
+      className={className}
+      onDragEnter={handleDragEnter}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={(event) => handleDrop(event, 'sidepanel')}
+    >
       <h1>SidePanel</h1>
       <StyledForm onSubmit={handleSubmit}>
         <StyledInput placeholder="anything,,," type="text" name="todo" required />
@@ -81,13 +57,18 @@ function SidePanel() {
       </StyledForm>
       <div>
         {Array.isArray(data) &&
-          data.map((todo) => {
-            return <StyledTodo key={todo.id}>{todo?.text} </StyledTodo >
-          })
+          data.map((todo) =>
+            <StyledTodo key={todo.id}
+              className="draggable"
+              draggable
+              onDragStart={() => handleDragStart(todo)}
+              onDragEnd={() => setDraggedItem(null)}>
+              {todo?.text}
+            </StyledTodo >
+          )
         }
-
       </div>
-    </StyledSidePanel>
+    </StyledSidePanel >
   );
 }
 

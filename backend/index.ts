@@ -43,10 +43,9 @@ app.listen(port, () => {
 
 app.post("/todo", async (req, res) => {
   try {
-    const { text, date } = req.body;
-
-    const sql = "INSERT INTO todos (text, date) VALUES (?, ?)";
-    connection.query(sql, [text, date], (err, result) => {
+    const { text, date, type } = req.body;
+    const sql = "INSERT INTO todos (text, date, type) VALUES (?, ?, ?)";
+    connection.query(sql, [text, date, type], (err, result) => {
       if (err) {
         console.error("Error inserting data into MySQL:", err);
         res.status(500).json({ error: "Internal server error" });
@@ -64,8 +63,9 @@ app.post("/todo", async (req, res) => {
 
 app.get("/todo", async (req, res) => {
   try {
-    const sql = `SELECT *  from todos;`;
-    connection.query(sql, (err, results) => {
+    const type = "sidepanel";
+    const sql = `SELECT * FROM todos WHERE type = ?;`;
+    connection.query(sql, [type], (err, results) => {
       if (err) {
         console.error("Error inserting data into MySQL:", err);
         res.status(500).json({ error: "Internal server error" });
@@ -79,43 +79,46 @@ app.get("/todo", async (req, res) => {
   }
 });
 
-// app.get("/todo/:id", async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const data = await connection
-//       .promise()
-//       .query(`SELECT *  from todo where id = ?`, [id]);
-//     res.status(200).json({
-//       todo: data[0][0],
-//     });
-//   } catch (err) {
-//     res.status(500).json({
-//       message: err,
-//     });
-//   }
-// });
+app.get("/todo/:type", async (req, res) => {
+  try {
+    const { type } = req.params;
+    const sql = `SELECT * FROM todos WHERE type = ?;`;
+    connection.query(sql, [type], (err, results) => {
+      if (err) {
+        console.error("Error inserting data into MySQL:", err);
+        res.status(500).json({ error: "Internal server error" });
+        return;
+      }
+      console.log("Fetched data from MySQL:", results);
+      res.status(200).json({ todos: results });
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: err,
+    });
+  }
+});
 
-// app.patch("/todo/:id", async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const { date, text, type } = req.body;
-//     const update = await connection
-//       .promise()
-//       .query(`UPDATE users set date = ?, text = ?, type = ? where id = ?`, [
-//         date,
-//         text,
-//         type,
-//         id,
-//       ]);
-//     res.status(200).json({
-//       message: "updated",
-//     });
-//   } catch (err) {
-//     res.status(500).json({
-//       message: err,
-//     });
-//   }
-// });
+app.put("/todo/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { type } = req.body;
+    const sql = `UPDATE todos set type = ? where id = ?`;
+    connection.query(sql, [type, id], (err, results) => {
+      if (err) {
+        console.error("Error inserting data into MySQL:", err);
+        res.status(500).json({ error: "Internal server error" });
+        return;
+      }
+      console.log("Update data from MySQL:", results);
+      res.status(200).json({ todos: results });
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: err,
+    });
+  }
+});
 
 // app.delete("/todo/:id", async (req, res) => {
 //   try {
