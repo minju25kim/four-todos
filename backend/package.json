@@ -8,6 +8,6 @@
     "mysql2": "^3.7.0"
   },
   "scripts": {
-    "dev": "bun --hot run index.ts"
+    "dev": "bun --hot run src/app.ts"
   }
 }

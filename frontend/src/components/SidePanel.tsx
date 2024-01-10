@@ -1,10 +1,22 @@
 import styled from "styled-components";
 import { Temporal } from "@js-temporal/polyfill";
 import { useState, useEffect } from "react";
+import { fetchTodo, postTodo, updateTodo, deleteTodo } from '../utility/apiServices';
+
+interface Todo {
+  id: number;
+  text: string;
+  date: string;
+  type: string;
+}
 
 const StyledSidePanel = styled.div`
-  border: 1px solid blue;
-  grid-area: sidepanel;
+  border: 1px solid red;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 350px;
 `;
 const StyledForm = styled.form`
   display: flex;
@@ -20,72 +32,56 @@ const StyledTodo = styled.p`
   border: 1px solid blue;
 `
 
-interface Todo {
-  id: number;
-  text: string;
-  date: string;
-  // Add other properties as needed
-}
 
 function SidePanel() {
+
+
+
   const [data, setData] = useState<Todo[]>([]);
 
-  const handleSubmit = (event: any) => {
-    event.preventDefault();
-    const todo = { text: event.target.elements.todo.value, date: Temporal.Now.plainDateTimeISO() };
-    fetch('http://localhost:8080/todo', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(todo),
-    })
-      .then((result) => {
-        console.log('Result:', result);
-        event.target.elements.todo.value = '';
-        fetchTodos();
-      })
-  };
-
-  const fetchTodos = () => {
-    fetch('http://localhost:8080/todo', {
-      method: 'GET'
-    })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
-      })
-      .then(data => {
-        setData(data.todos);
-        console.log('Data received:', data); // Log the data received from the server
-      })
-      .catch(error => {
-        console.error('There was a problem with the GET request:', error);
-      });
-  };
-
-
   useEffect(() => {
-    fetchTodos();
+    fetchTodo('todo').then((data) => setData(data))
   }, []);
 
+  const handleSubmit = async (event: any) => {
+    event.preventDefault();
+    const target = event.target.elements.namedItem('todo')
+    const json = { text: target.value, date: Temporal.Now.plainDateTimeISO(), type: 'todo' };
+    try {
+      await postTodo(json);
+      const updatedData = await fetchTodo('todo');
+      setData(updatedData);
+      target.value = '';
+    } catch (error) {
+      console.error('Error while submitting todo:', error);
+    }
+  };
 
+  const handleDelete = async (type: string, id: number) => {
+    try {
+      await deleteTodo(id);
+      const updatedData = await fetchTodo(type);
+      setData(updatedData);
+    } catch (error) {
+      console.error('Error while submitting todo:', error);
+    }
+  }
+  
   return (
     <StyledSidePanel>
-      <h1>SidePanel</h1>
       <StyledForm onSubmit={handleSubmit}>
         <StyledInput placeholder="anything,,," type="text" name="todo" required />
         <StyledButton>Submit</StyledButton>
       </StyledForm>
-      <div>
-        {Array.isArray(data) &&
-          data.map((todo) => {
-            return <StyledTodo key={todo.id}>{todo?.text} </StyledTodo >
-          })
+      <div >
+        {
+          data.map((todo) =>
+            <StyledTodo key={todo.id}>
+              {todo?.text}
+              <button onClick={() => handleDelete(todo.type, todo.id)}>❎</button>
+            </StyledTodo>
+          )
         }
-
       </div>
     </StyledSidePanel>
   );
