@@ -1,20 +1,22 @@
 import styled from "styled-components";
+import { Temporal } from "@js-temporal/polyfill";
+import { useState, useEffect } from "react";
+import { fetchTodo, postTodo, updateTodo, deleteTodo } from '../utility/apiServices';
 
-interface SidePanelProps {
-  handleSubmit: any;
-  data: any;
-  className: string;
-  handleDragStart: any;
-  handleDragEnter: any;
-  handleDragOver: any;
-  handleDragLeave: any;
-  handleDrop: any;
-  setDraggedItem: any;
+interface Todo {
+  id: number;
+  text: string;
+  date: string;
+  type: string;
 }
 
 const StyledSidePanel = styled.div`
-  border: 1px solid blue;
-  grid-area: sidepanel;
+  border: 1px solid red;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 350px;
 `;
 const StyledForm = styled.form`
   display: flex;
@@ -30,45 +32,58 @@ const StyledTodo = styled.p`
   border: 1px solid blue;
 `
 
-function SidePanel({
-  handleSubmit,
-  data,
-  className,
-  handleDragStart,
-  handleDragEnter,
-  handleDragOver,
-  handleDragLeave,
-  handleDrop,
-  setDraggedItem,
-}: SidePanelProps) {
 
+function SidePanel() {
+
+
+
+  const [data, setData] = useState<Todo[]>([]);
+
+  useEffect(() => {
+    fetchTodo('todo').then((data) => setData(data))
+  }, []);
+
+  const handleSubmit = async (event: any) => {
+    event.preventDefault();
+    const target = event.target.elements.namedItem('todo')
+    const json = { text: target.value, date: Temporal.Now.plainDateTimeISO(), type: 'todo' };
+    try {
+      await postTodo(json);
+      const updatedData = await fetchTodo('todo');
+      setData(updatedData);
+      target.value = '';
+    } catch (error) {
+      console.error('Error while submitting todo:', error);
+    }
+  };
+
+  const handleDelete = async (type: string, id: number) => {
+    try {
+      await deleteTodo(id);
+      const updatedData = await fetchTodo(type);
+      setData(updatedData);
+    } catch (error) {
+      console.error('Error while submitting todo:', error);
+    }
+  }
+  
   return (
-    <StyledSidePanel
-      className={className}
-      onDragEnter={handleDragEnter}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={(event) => handleDrop(event, 'sidepanel')}
-    >
-      <h1>SidePanel</h1>
+    <StyledSidePanel>
       <StyledForm onSubmit={handleSubmit}>
         <StyledInput placeholder="anything,,," type="text" name="todo" required />
         <StyledButton>Submit</StyledButton>
       </StyledForm>
-      <div>
-        {Array.isArray(data) &&
+      <div >
+        {
           data.map((todo) =>
-            <StyledTodo key={todo.id}
-              className="draggable"
-              draggable
-              onDragStart={() => handleDragStart(todo)}
-              onDragEnd={() => setDraggedItem(null)}>
+            <StyledTodo key={todo.id}>
               {todo?.text}
-            </StyledTodo >
+              <button onClick={() => handleDelete(todo.type, todo.id)}>❎</button>
+            </StyledTodo>
           )
         }
       </div>
-    </StyledSidePanel >
+    </StyledSidePanel>
   );
 }
 
