@@ -1,6 +1,7 @@
 import styled from "styled-components";
 import { useState, useEffect, Dispatch, SetStateAction } from "react";
 import { fetchTodo, postTodo, updateTodo, deleteTodo } from '../utility/apiServices';
+import TodoList from "./TodoList";
 
 interface Todo {
   id: number;
@@ -17,9 +18,7 @@ const StyledTodoContainer = styled.div`
 const StyledTitle = styled.h3`
     border: 1px solid pink;
   `;
-const StyledTodo = styled.p`
-    border: 1px solid blue;
-  `;
+
 
 function TodoContainer() {
   const [doList, setDoList] = useState<Todo[]>([]);
@@ -40,32 +39,17 @@ function TodoContainer() {
   useEffect(() => {
     types.forEach((type) => {
       fetchTodo(type).then((res) => {
-        stateSetters[type](res); 
+        stateSetters[type](res);
       });
     });
   }, []);
-
-  const handleDelete = async (type: string, id: number) => {
-    try {
-      await deleteTodo(id);
-      const updatedData = await fetchTodo(type);
-      stateSetters[type](updatedData); // Update state dynamically
-    } catch (error) {
-      console.error('Error while deleting todo:', error);
-    }
-  };
 
   return (
     <StyledTodoContainer>
       {types.map((type, index) => (
         <div key={type}>
           <StyledTitle>{type}</StyledTitle>
-          {list[index].map((todo) => (
-            <StyledTodo key={todo.id}>
-              {todo?.text}
-              <button onClick={() => handleDelete(todo.type, todo.id)}>❎</button>
-            </StyledTodo>
-          ))}
+          <TodoList data={list[index]} setData={stateSetters[type]} />
         </div>
       ))}
     </StyledTodoContainer>

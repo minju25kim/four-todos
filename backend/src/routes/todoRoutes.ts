@@ -65,9 +65,10 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const { type } = req.body;
-    const sql = `UPDATE todos set type = ? where id = ?`;
-    connection.query(sql, [type, id], (err, results) => {
+    const { type, text, date, checked } = req.body;
+    const sql = `UPDATE todos SET type = ?, text = ?, date = ?, checked = ? WHERE id = ?;
+    `;
+    connection.query(sql, [type, text, date, checked, id], (err, results) => {
       if (err) {
         console.error("Error inserting data into MySQL:", err);
         res.status(500).json({ error: "Internal server error" });
