@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { useState, useEffect, Dispatch, SetStateAction } from "react";
-import { fetchTodo, postTodo, updateTodo, deleteTodo } from '../utility/apiServices';
+import { fetchTodo } from '../utility/apiServices';
 import TodoList from "./TodoList";
 
 interface Todo {
@@ -8,6 +8,7 @@ interface Todo {
   text: string;
   date: string;
   type: string;
+  checked: number;
 }
 
 const StyledTodoContainer = styled.div`
@@ -15,7 +16,7 @@ const StyledTodoContainer = styled.div`
   width: 500px;
   min-height: 100px;
   `;
-const StyledTitle = styled.h3`
+const StyledTitle = styled.div`
     border: 1px solid pink;
   `;
 
@@ -44,11 +45,18 @@ function TodoContainer() {
     });
   }, []);
 
+  const getChecked = (array: any) => {
+    return array.filter((el: any) => el.checked === 1).length;
+  }
+
   return (
     <StyledTodoContainer>
       {types.map((type, index) => (
         <div key={type}>
-          <StyledTitle>{type}</StyledTitle>
+          <StyledTitle>
+            <h3>{type}</h3>
+            <span>{getChecked(list[index])}/{list[index].length}</span>
+          </StyledTitle>
           <TodoList data={list[index]} setData={stateSetters[type]} />
         </div>
       ))}

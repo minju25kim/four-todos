@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { Temporal } from "@js-temporal/polyfill";
 import { useState, useEffect } from "react";
-import { fetchTodo, postTodo, updateTodo, deleteTodo } from '../utility/apiServices';
+import { fetchTodo, postTodo } from '../utility/apiServices';
 import TodoList from "./TodoList";
 
 interface Todo {
@@ -9,6 +9,7 @@ interface Todo {
   text: string;
   date: string;
   type: string;
+  checked: number;
 }
 
 const StyledSidePanel = styled.div`
