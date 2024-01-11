@@ -35,14 +35,14 @@ export const postTodo = async (json: any): Promise<void> => {
   }
 };
 
-export const updateTodo = async (id: any, target: string): Promise<void> => {
+export const updateTodo = async (id: any, json: any): Promise<void> => {
   try {
     const result = await fetch(`${API_URL}/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ type: target }),
+      body: JSON.stringify(json),
     });
     if (!result.ok) {
       throw new Error("Network response was not ok");
